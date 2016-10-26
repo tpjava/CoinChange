@@ -7,6 +7,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 
 /**
  * Created by tonyperrin.
@@ -34,5 +36,11 @@ public class CoinRepository {
         int count = propertyManager.getProperty(coin.getDenomination());
         propertyManager.setProperty(coin.getDenomination(), --count);
         return true;
+    }
+
+    public void removeCoins(Coin coin, int size) {
+        for(int idx = 0 ; idx < size ; idx++) {
+            removeCoin(coin);
+        }
     }
 }

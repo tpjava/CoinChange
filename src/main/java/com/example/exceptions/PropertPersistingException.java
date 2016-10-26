@@ -3,7 +3,7 @@ package com.example.exceptions;
 import java.io.IOException;
 
 /**
- * Created by tonyperrin on 26/10/2016.
+ * Created by tonyperrin.
  */
 public class PropertPersistingException extends RuntimeException {
     public PropertPersistingException(String message) {

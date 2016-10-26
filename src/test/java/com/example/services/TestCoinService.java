@@ -1,10 +1,12 @@
 package com.example.services;
-import com.example.exceptions.InsufficientCoinageException;
+import com.example.TestBase;
+import com.example.exceptions.InsufficientFundsException;
 import com.example.model.Coin;
 import com.example.model.impl.CoinImpl;
 import com.example.model.impl.Denomination;
 import com.example.properties.PropertyManager;
 import com.example.repositories.CoinRepository;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +16,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
@@ -29,7 +30,7 @@ import static org.mockito.Mockito.when;
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest
 @EnableAutoConfiguration
-public class TestCoinService {
+public class TestCoinService extends TestBase {
     @Autowired
     private CoinService coinService;
 
@@ -79,12 +80,12 @@ public class TestCoinService {
     }
 
     @Test
-    public void testCoinServiceChangeForNegativeValue() {
+    public void testCoinServiceChangeForNegativeValue() throws InsufficientFundsException {
         assertEquals(coinService.getChangeFor(-5).stream().count(), 0);
     }
 
     @Test
-    public void testCoinServiceChangeForWithPropertiesOnePenceMock() {
+    public void testCoinServiceChangeForWithPropertiesOnePenceMock() throws InsufficientFundsException {
         CoinService mock = mock(CoinService.class);
         Collection<Coin> coins = new ArrayList<>();
         coins.add(new CoinImpl(new Denomination(2, "Two Penny")));
@@ -94,23 +95,31 @@ public class TestCoinService {
         assertEquals(coins.stream().filter(c -> c.getDenomination() == 2).count(), 1);
     }
 
-    @Test(expected = InsufficientCoinageException.class)
-    public void testCoinServiceChangeForWithPropertiesTwoOnePenceNotOneTwoPence() {
+    @Test(expected = InsufficientFundsException.class)
+    public void testCoinServiceChangeForWithPropertiesTwoOnePenceNotOneTwoPence() throws InsufficientFundsException {
         Collection<Coin> coins = coinService.getChangeFor(2);
         assertEquals(coins.stream().filter(c -> c.getDenomination() == 2).count(), 1);
         coinService.getChangeFor(2); //no two pence coins left
     }
 
-    @Test(expected = InsufficientCoinageException.class)
-    public void testPropertiesFilePersistsLatestValueWhenCoinsReduced() {
+    @Test(expected = InsufficientFundsException.class)
+    public void testPropertiesFilePersistsLatestValueWhenCoinsReduced() throws InsufficientFundsException {
+        //properties coins should be 2=3
         Collection<Coin> coins = coinService.getChangeFor(2);
         assertEquals(coins.stream().filter(c -> c.getDenomination() == 2).count(), 1);
+        //properties coins should be 2=2
+        coins = coinService.getChangeFor(2);
+        assertEquals(coins.stream().filter(c -> c.getDenomination() == 2).count(), 1);
+        //properties coins should be 2=1
+        coins = coinService.getChangeFor(2);
+        assertEquals(coins.stream().filter(c -> c.getDenomination() == 2).count(), 1);
+        //properties coins should be 2=0
         coinService = new CoinService(new CoinRepository(new PropertyManager())); //new property manager should pick up updated properties
-        coinService.getChangeFor(2);
+        coinService.getChangeFor(2); //should throw exception as not enough two pence left
     }
 
-    @Test(expected = InsufficientCoinageException.class)
-    public void testCoinServiceChangeForInsufficientCoins() throws InsufficientCoinageException{
+    @Test(expected = InsufficientFundsException.class)
+    public void testCoinServiceChangeForInsufficientCoins() throws InsufficientFundsException {
         coinService.getChangeFor(2);
     }
 }

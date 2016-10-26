@@ -1,16 +1,15 @@
 package com.example.services;
 
-import com.example.exceptions.InsufficientCoinageException;
+import com.example.exceptions.InsufficientFundsException;
 import com.example.model.Coin;
 import com.example.model.impl.*;
 import com.example.repositories.CoinRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Created by tonyperrin.
@@ -34,7 +33,7 @@ public class CoinService {
     }
 
     public Collection<Coin> getOptimalChangeFor(int amount) {
-        if(amount < 0) {
+        if(amount <= 0) {
             return new ArrayList<>();
         }
         List<Coin> results = new ArrayList<>();
@@ -55,29 +54,34 @@ public class CoinService {
         return results; //return collection of coins.
     }
 
-    public Collection<Coin> getChangeFor(int amount) {
-        if(amount < 0) {
+    public Collection<Coin> getChangeFor(int amount) throws InsufficientFundsException {
+        if(amount <= 0) {
             return new ArrayList<Coin>();
         }
-        List<Coin> results = new ArrayList<>();
+        //get all required coins with no restrictions on supply
+        Collection<Coin> coins = getOptimalChangeFor(amount);
 
-        for(Coin coin : coins) {
-            int count = amount / coin.getDenomination();
+        Map<Coin, Long> result = coins
+                .stream()
+                .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
 
-            if(count > 0) { //valid denomination for coin.
-                for(int idx = 0 ; idx < count ; idx++) {
-                    if(coinRepository.removeCoin(coin)) {
-                        results.add(coin);
-                        amount -= coin.getDenomination();
-                    } else {
-                        throw new InsufficientCoinageException("There were not enough " + coin + "to make up the required change.");
-                    }
-                }
-            }
-            if(amount == 0) {
-                break; //no more change to give out.
+        Iterator<Map.Entry<Coin, Long>> iterator = result.entrySet().iterator();
+
+        while(iterator.hasNext()) {
+            Map.Entry<Coin, Long> entry = iterator.next();
+
+            if( entry.getValue() > coinRepository.findCoinCountByDenomination(entry.getKey().getDenomination())) {
+                throw new InsufficientFundsException("There were not enough " + entry.getKey().toString() + "(s) to make up the required change.");
             }
         }
-        return results; //return collection of coins.
+        //made it here so enough of each coin type.
+        iterator = result.entrySet().iterator();
+
+        while(iterator.hasNext()) {
+            Map.Entry<Coin, Long> entry = iterator.next();
+            coinRepository.removeCoins(entry.getKey(), entry.getValue().intValue());
+        }
+        //Update property values and return coins
+        return coins;
     }
 }
