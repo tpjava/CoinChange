@@ -10,6 +10,8 @@ To build the project execute the following maven command from the project root d
 This will provide an executable jar file in the target folder called ```CoinChange-1.0.0-SNAPSHOT-Spring-Boot.jar```
 which you can run from the command line using ```java -jar CoinChange-1.0.0-SNAPSHOT-Spring-Boot.jar```
 
+You can also run from the project root folder using the command ```mvn spring-boot:run```
+
 This service relies on a properties file named ```coin-inventory.properties``` in the format:
 ```
 100=2
@@ -22,7 +24,7 @@ This service relies on a properties file named ```coin-inventory.properties``` i
 ```
 
 This provides the service with the available to change to work from.  Currently this file needs to be placed
-in the root directory of the project.
+in the ```root directory of the project```.
 
 When run the command line will prompt you to enter coin amounts which will return and print out
 the minimum coins required.  This runs as a stand alone service.
