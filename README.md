@@ -39,5 +39,7 @@ Collection<com.example.model.Coin> 	getOptimalChangeFor(int amount)
 Calculates the minimum number of Coin objects required to make up the supplied amount.
 ```
 To generate javadocs run ```mvn javadoc:javadoc```.   API Documentation can be viewed here:
-```CoinChange/target/site/apidocs/index.html```
+```
+CoinChange/target/site/apidocs/index.html
+```
 
