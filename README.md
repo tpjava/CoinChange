@@ -34,6 +34,7 @@ or to your IDE library from where you can call its API methods.
 ```
 Collection<com.example.model.Coin> 	getChangeFor(int amount)
 Calculates the minimum number of Coin objects required to make up the supplied amount when coins are available in properties store.
+
 Collection<com.example.model.Coin> 	getOptimalChangeFor(int amount)
 Calculates the minimum number of Coin objects required to make up the supplied amount.
 ```
