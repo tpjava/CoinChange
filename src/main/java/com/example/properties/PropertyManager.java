@@ -12,15 +12,9 @@ import java.util.Properties;
 @Component
 public class PropertyManager {
     private static final String PROPERTIES_PATH = "coin-inventory.properties";
-    private boolean storeUpdates = true;
     private Properties properies;
 
     public PropertyManager() {
-        this(false);
-    }
-
-    public PropertyManager(boolean storeUpdates) {
-        this.storeUpdates = storeUpdates;
         init();
     }
 
@@ -28,7 +22,14 @@ public class PropertyManager {
         if(properies == null) {
             try {
                 properies = new Properties();
-                properies.load(PropertyManager.class.getResourceAsStream(File.separator + PROPERTIES_PATH));
+                //Try loading properties file from root
+                File file = new File(PROPERTIES_PATH);
+
+                if(file != null && file.exists()) {
+                    properies.load(new FileInputStream(file));
+                } else {
+                    properies.load(PropertyManager.class.getResourceAsStream(File.separator + PROPERTIES_PATH));
+                }
             } catch (IOException e) {
                 throw new RuntimeException("Could not find property file " + PROPERTIES_PATH + " + on path.", e);
             }
@@ -44,10 +45,17 @@ public class PropertyManager {
             properies.setProperty(String.valueOf(denomination), String.valueOf(value));
         }
         try {
-            OutputStream outputStream = new FileOutputStream(new File(PropertyManager.class.getClassLoader().getResource(PROPERTIES_PATH).getPath()));
+            OutputStream outputStream = null;
+            File file = new File(PROPERTIES_PATH);
+
+            if(file != null && file.exists()) {
+                outputStream = new FileOutputStream(file);
+            } else {
+                outputStream = new FileOutputStream(new File(PropertyManager.class.getClassLoader().getResource(PROPERTIES_PATH).getPath()));
+            }
             properies.store(outputStream, null);
         } catch (FileNotFoundException e) {
-            throw new PropertPersistingException("Could not find properties file in able to store new property values.");
+            throw new PropertPersistingException("Could not find properties file in able to store new property values.  Please place this in the root directory of the project you are running from.");
         } catch (IOException e) {
             throw new PropertPersistingException("Could not store property", e);
         }

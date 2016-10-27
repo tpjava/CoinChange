@@ -26,7 +26,7 @@ public class CoinChange {
 
     /**
      * Calculates the minimum number of Coin objects required to make up the supplied amount.
-     * @param amount
+     * @param amount pass in the value you wish to receive the coin change for.
      * @return Collection of coins
      */
     public Collection<Coin> getOptimalChangeFor(int amount) {
@@ -36,9 +36,9 @@ public class CoinChange {
 
     /**
      * Calculates the minimum number of Coin objects required to make up the supplied amount when coins are available in properties store.
-     * @param amount
+     * @param amount pass in the value you wish to receive the coin change for
      * @return Collection of coins
-     * @Throws InsufficientCoinageException if not enough coins left to make up change.
+     * @throws InsufficientFundsException if not enough coins left to make up change.
      */
     public Collection<Coin> getChangeFor(int amount) throws InsufficientFundsException {
         return coinService.getChangeFor(amount);
